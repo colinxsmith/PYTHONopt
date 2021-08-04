@@ -425,9 +425,11 @@ class QP(LP):
             if not corrector:
                 dtau = (cdx-bdy+self.rkxy*g1+(self.hrmu-g1*self.mu) /
                         self.tau)/(bdb-cdc+self.kappa/self.tau)
+                dtau=0
             else:
                 dtau = (cdx-bdy+self.rkxy*g1+(self.hrmu-g1*self.mu -
                         dtau0*dkappa0)/self.tau)/(bdb-cdc+self.kappa/self.tau)
+                dtau=0
             dx = [dx[i]+dtau*dc[i] for i in range(self.n)]
             dy = [dy[i]+dtau*db[i] for i in range(self.m)]
             if not corrector:
@@ -668,9 +670,10 @@ if __name__ == '__main__':
     c = [.01*(gfunc(i+1)+2) for i in range(n)]
     bench = [1.0/n]*n
     cextra = [0]*n
-    m = 1
-    A = [1]*n
-    b = [1]
+    m = 2
+    A = [1,0]*n
+    A[1]=-1
+    b = [1,5e-2]
     H = [1e-2]*int(n*(n+1)/2)
     for i in range(n):
         H[int(i*(i+3)/2)] = .1*(1+i)
@@ -681,13 +684,18 @@ if __name__ == '__main__':
     # [-0.5]+[3e-2]*(n-1)  # if sign[i] is 1 lower bound, -1 upper bound
     UL = []
 #    SeqQP(n,m,c,A,b,w,H=H,homogenous=0,maxiter=100,sign=[-1]+[-1]*(n-1),L=UL)
-    IPopt(n, m, c, A, b, w, H=H, homogenous=0,
+    back=IPopt(n, m, c, A, b, w, H=[], homogenous=1,
           maxiter=100, sign=[1]+[1]*(n-1), L=UL)
-    print(sum(w))
-    if H != []:
-        Hw = []
-        Sym_mult(n, H, w, Hw)
-        print(dot(c, w)+0.5*dot(Hw, w))
+    if back!=6:back=IPopt(n, m, c, A, b, w, H=H, homogenous=0,
+          maxiter=100, sign=[1]+[1]*(n-1), L=UL)
+    
+    if back==6:print('Infeasible')
+    else:
+        print(sum(w))
+        if H != []:
+            Hw = []
+            Sym_mult(n, H, w, Hw)
+            print(dot(c, w)+0.5*dot(Hw, w))
         for i in range(n):
             print('%20.8e %20.8e' % (w[i], c[i]+Hw[i]))
         Aw = [0]*m
