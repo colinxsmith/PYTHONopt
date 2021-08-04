@@ -1,6 +1,7 @@
 
+OPTPATH='c:\\Users\\colin\\safeqp64'
 from os import add_dll_directory
-add_dll_directory('c:\\Users\\colin\\safeqp64')
+add_dll_directory(OPTPATH)
 from re import *
 from BITAOPT import *
 
